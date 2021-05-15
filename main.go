@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -27,26 +26,7 @@ func randomName() string {
 	return string(output)
 }
 
-// Parses command line arguments with the flag module
-func parseFlags() (path string, files bool, dirs bool, depth int) {
-	filesP := flag.Bool("files", true, "Rename files")
-	dirsP := flag.Bool("dirs", false, "Rename directories")
-	depthP := flag.Int("depth", 1, "Depth of the rename (not yet implemented)")
-
-	flag.Parse()
-
-	path = flag.Arg(0)
-	if len(path) == 0 {
-		path = "./"
-	}
-
-	return path, *filesP, *dirsP, *depthP
-}
-
 func main() {
-	path, files, dirs, depth := parseFlags()
-	fmt.Println(path, files, dirs, depth)
-
 	fileList, err := ioutil.ReadDir(".")
 	handle(err)
 
@@ -85,16 +65,20 @@ func main() {
 
 	for len(operations) != 0 {
 		for original, new := range operations {
-			fmt.Println(original, new)
 			if original == new {
 				delete(operations, original)
 				continue
 			}
 			for otherOriginal, otherNew := range operations {
 				if new == otherOriginal {
+					fmt.Println("Name in use:", new)
 					random := otherOriginal
-					for _, nameIsInUse := operations[random]; nameIsInUse; { // while name is in use
+					for true { // while name is in use
 						random = randomName()
+						_, nameUsed := operations[random]
+						if !nameUsed {
+							break
+						}
 					}
 					fmt.Println(otherOriginal, "->", random)
 					handle(os.Rename(otherOriginal, random))
@@ -105,6 +89,7 @@ func main() {
 			}
 			fmt.Println(original, "->", new)
 			os.Rename(original, new)
+			delete(operations, original)
 		}
 	}
 
