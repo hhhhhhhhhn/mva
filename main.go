@@ -37,11 +37,19 @@ func main() {
 	}
 	handle(tempFile.Close())
 
-	cmd := exec.Command("vim", tempFile.Name())
+	cmd := exec.Command("$EDITOR", tempFile.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	handle(cmd.Run())
+	err = cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+		cmd := exec.Command("vim", tempFile.Name())
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		handle(cmd.Run())
+	}
 
 	fileOutput, err := ioutil.ReadFile(tempFile.Name())
 	handle(err)
