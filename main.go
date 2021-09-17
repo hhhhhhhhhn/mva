@@ -37,7 +37,7 @@ func main() {
 	}
 	handle(tempFile.Close())
 
-	cmd := exec.Command("$EDITOR", tempFile.Name())
+	cmd := exec.Command("sh", "-c", "$EDITOR " + tempFile.Name())
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
